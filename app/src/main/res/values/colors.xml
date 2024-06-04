@@ -3,4 +3,5 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="nextetruckgreen">#69b42e</color>
+    <color name="nextetruckorange">#eb611c</color>
 </resources>
