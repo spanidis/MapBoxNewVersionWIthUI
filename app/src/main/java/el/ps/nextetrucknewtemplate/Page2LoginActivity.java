@@ -1,7 +1,5 @@
 package el.ps.nextetrucknewtemplate;
 
-import static android.content.ContentValues.TAG;
-
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
@@ -11,7 +9,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -27,8 +24,6 @@ public class Page2LoginActivity extends AppCompatActivity {
     Button btnLogin;
     EditText etName, etPassword;
     String url = "http://160.40.60.237:8080/nextetruck.mission/rest/server/login";
-    StringBuilder response;
-    String sReturn = "error";
     ExecutorService executorService;
 
 
@@ -127,20 +122,11 @@ public class Page2LoginActivity extends AppCompatActivity {
 
             // Assuming JSON object has key "name" and "age"
             String user_id = jsonObject.getString("user_id");
-            String firstname = jsonObject.getString("firstname");
-            String lastname = jsonObject.getString("lastname");
-            String email = jsonObject.getString("email");
-            String company_id = jsonObject.getString("company_id");
-            String companyname = jsonObject.getString("companyname");
-            String userrole_id = jsonObject.getString("userrole_id");
-            String rolename = jsonObject.getString("rolename");
-            String username = jsonObject.getString("username");
-            String password = jsonObject.getString("password");
 
             //Log.i("PAVLOS", "String user_id:"+user_id);
-            int usrid = Integer.parseInt(user_id);
+            int usr_id = Integer.parseInt(user_id);
             Log.i("PAVLOS", "Integer user_id:"+user_id);
-            if(usrid>0 && usrid<1000){
+            if(usr_id>0 && usr_id<1000){
                 Log.i("PAVLOS", "Login User");
                 Intent i = new Intent(Page2LoginActivity.this, Page3MissionActivity.class);
                 startActivity(i);
@@ -149,13 +135,6 @@ public class Page2LoginActivity extends AppCompatActivity {
                 Log.i("PAVLOS", "Throw Out User");
             }
 
-//            // Assuming JSON object has key "friends" which is an array
-//            JSONArray friendsArray = jsonObject.getJSONArray("friends");
-//            for (int i = 0; i < friendsArray.length(); i++) {
-//                JSONObject friendObject = friendsArray.getJSONObject(i);
-//                String friendName = friendObject.getString("name");
-//                System.out.println("Friend " + (i+1) + ": " + friendName);
-//            }
         } catch (JSONException e) {
             e.printStackTrace();
         }
