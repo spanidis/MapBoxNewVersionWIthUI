@@ -5,8 +5,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -26,7 +29,10 @@ public class Page3MissionActivity extends AppCompatActivity {
     ExecutorService executorService;
     String url = "http://160.40.60.237:8080/nextetruck.mission/rest/server/getMissions";
     private List<String> data;
+    private JSONArray jsonArrayData = new JSONArray();
+
     private ArrayAdapter<String> adapter;
+    private int selectionPosition = 0;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,6 +46,18 @@ public class Page3MissionActivity extends AppCompatActivity {
         adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, data);
         // Set the ArrayAdapter as the ListView's adapter
         listView.setAdapter(adapter);
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                selectionPosition = i;
+                // Get the selected item text from ListView
+                String selectedItem = (String) adapterView.getItemAtPosition(i);
+
+                // Display a toast message with the selected item
+                Toast.makeText(Page3MissionActivity.this, "Pavlos Selected: " + selectedItem, Toast.LENGTH_SHORT).show();
+            }
+        });
 
         //Dimokas call for missions
         GlobalData globalData = GlobalData.getInstance();
@@ -120,10 +138,22 @@ public class Page3MissionActivity extends AppCompatActivity {
 
                     String mission_id = jsonObject.getString("mission_id");
                     String m_title = jsonObject.getString("m_title");
-                    String m_departure_address = jsonObject.getString("m_departure_address");
-                    String m_arrival_address = jsonObject.getString("m_arrival_address");
+                    //String m_departure_address = jsonObject.getString("m_departure_address");
+                    //String m_arrival_address = jsonObject.getString("m_arrival_address");
+                    String m_departure_lat = jsonObject.getString("m_departure_lat");
+                    String m_departure_long = jsonObject.getString("m_departure_long");
+                    String m_arrival_lat = jsonObject.getString("m_arrival_lat");
+                    String m_arrival_long = jsonObject.getString("m_arrival_long");
                     Log.i("PAVLOS MISSION", "String mission_id:"+mission_id);
                     data.add(mission_id + " " + m_title);
+                    JSONObject jsonObjectData = new JSONObject();
+                    jsonObjectData.put("mission_id", mission_id);
+                    jsonObjectData.put("m_title", m_title);
+                    jsonObjectData.put("m_departure_lat", m_departure_lat);
+                    jsonObjectData.put("m_departure_long", m_departure_long);
+                    jsonObjectData.put("m_arrival_lat", m_arrival_lat);
+                    jsonObjectData.put("m_arrival_long", m_arrival_long);
+                    jsonArrayData.put(jsonObjectData);
                 }
                 adapter.notifyDataSetChanged();
             } catch (JSONException e) {
