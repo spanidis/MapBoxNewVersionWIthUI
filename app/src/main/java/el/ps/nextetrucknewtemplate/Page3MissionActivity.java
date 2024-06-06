@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -29,10 +30,10 @@ public class Page3MissionActivity extends AppCompatActivity {
     ExecutorService executorService;
     String url = "http://160.40.60.237:8080/nextetruck.mission/rest/server/getMissions";
     private List<String> data;
-    private JSONArray jsonArrayData = new JSONArray();
-
+    private String jsonArrayData;
     private ArrayAdapter<String> adapter;
     private int selectionPosition = 0;
+    Button btnProceed;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,7 +56,24 @@ public class Page3MissionActivity extends AppCompatActivity {
                 String selectedItem = (String) adapterView.getItemAtPosition(i);
 
                 // Display a toast message with the selected item
-                Toast.makeText(Page3MissionActivity.this, "Pavlos Selected: " + selectedItem, Toast.LENGTH_SHORT).show();
+                Toast.makeText(Page3MissionActivity.this, "Selection: " + selectedItem, Toast.LENGTH_SHORT).show();
+
+            }
+        });
+
+        btnProceed = findViewById(R.id.btnProceed);
+        btnProceed.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // Call the Coords function
+                if(selectionPosition !=0)
+                {
+                    getCoordsFromArray(selectionPosition);
+                    //Log.i("PAVLOS ARRAY", jsonArrayData.toString());
+                }
+                else{
+                    Toast.makeText(Page3MissionActivity.this, "Please select a Mission", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -76,6 +94,27 @@ public class Page3MissionActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    private void getCoordsFromArray(int itemPosition){
+        try {
+            JSONArray jsonArray = new JSONArray(jsonArrayData);
+            //Log.i("SELECTED MISSION", "String mission_id:"+jsonArray.toString());
+            JSONObject jsonObject = jsonArray.getJSONObject(itemPosition);
+            //Log.i("SELECTED MISSION", "String mission_id:"+jsonObject.toString());
+            String mission_id = jsonObject.getString("mission_id");
+            String m_title = jsonObject.getString("m_title");
+            String m_departure_lat = jsonObject.getString("m_departure_lat");
+            String m_departure_long = jsonObject.getString("m_departure_long");
+            String m_arrival_lat = jsonObject.getString("m_arrival_lat");
+            String m_arrival_long = jsonObject.getString("m_arrival_long");
+            Log.i("SELECTED MISSION", "String mission_id:"+mission_id);
+
+            //Call NNG - 3 CALLS
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     private void makeHttpRequest(String urlString, String nameString, String passwordString){
@@ -128,6 +167,7 @@ public class Page3MissionActivity extends AppCompatActivity {
 
     private void handleResponse(String response) {
         // Update UI with the response
+        jsonArrayData = response;
         Log.d("HTTP Response:", response);
         runOnUiThread(() -> {
             try {
@@ -146,14 +186,6 @@ public class Page3MissionActivity extends AppCompatActivity {
                     String m_arrival_long = jsonObject.getString("m_arrival_long");
                     Log.i("PAVLOS MISSION", "String mission_id:"+mission_id);
                     data.add(mission_id + " " + m_title);
-                    JSONObject jsonObjectData = new JSONObject();
-                    jsonObjectData.put("mission_id", mission_id);
-                    jsonObjectData.put("m_title", m_title);
-                    jsonObjectData.put("m_departure_lat", m_departure_lat);
-                    jsonObjectData.put("m_departure_long", m_departure_long);
-                    jsonObjectData.put("m_arrival_lat", m_arrival_lat);
-                    jsonObjectData.put("m_arrival_long", m_arrival_long);
-                    jsonArrayData.put(jsonObjectData);
                 }
                 adapter.notifyDataSetChanged();
             } catch (JSONException e) {
