@@ -163,6 +163,14 @@ public class Page3MissionActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        // Shutdown the executor service when the activity is destroyed
+        try {
+            // Shutdown the executor service when the activity is destroyed
+            executorService.shutdown();
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Handle exceptions during shutdown (optional)
+        }
         Log.d("MissionActivity", "onDestroy called");
     }
 }
