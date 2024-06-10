@@ -3,6 +3,8 @@ package el.ps.nextetrucknewtemplate;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
@@ -90,7 +92,7 @@ public class Page3MissionActivity extends AppCompatActivity {
         executorService.submit(new Runnable() {
             @Override
             public void run() {
-                makeHttpRequest(url, name, password);
+                makeDimokasHttpRequest(url, name, password);
             }
         });
 
@@ -103,21 +105,114 @@ public class Page3MissionActivity extends AppCompatActivity {
             JSONObject jsonObject = jsonArray.getJSONObject(itemPosition);
             //Log.i("SELECTED MISSION", "String mission_id:"+jsonObject.toString());
             String mission_id = jsonObject.getString("mission_id");
-            String m_title = jsonObject.getString("m_title");
-            String m_departure_lat = jsonObject.getString("m_departure_lat");
-            String m_departure_long = jsonObject.getString("m_departure_long");
-            String m_arrival_lat = jsonObject.getString("m_arrival_lat");
-            String m_arrival_long = jsonObject.getString("m_arrival_long");
+            //String m_title = jsonObject.getString("m_title");
+            //String m_departure_lat = jsonObject.getString("m_departure_lat");
+            //String m_departure_long = jsonObject.getString("m_departure_long");
+            //String m_arrival_lat = jsonObject.getString("m_arrival_lat");
+            //String m_arrival_long = jsonObject.getString("m_arrival_long");
             Log.i("SELECTED MISSION", "String mission_id:"+mission_id);
 
             //Call NNG - 3 CALLS
+            new SynchronousHttpRequests().executeRequests();
+
 
         } catch (JSONException e) {
             e.printStackTrace();
         }
     }
 
-    private void makeHttpRequest(String urlString, String nameString, String passwordString){
+    private class SynchronousHttpRequests {
+
+        // Main executor for background tasks
+        private ExecutorService executorService = Executors.newSingleThreadExecutor();
+
+        // Handler to post results to the main thread
+        private Handler handler = new Handler(Looper.getMainLooper());
+
+        public void executeRequests() {
+            executorService.execute(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        // First HTTP request
+                        String response1 = makeHttpRequest("http://nextetruck.nng.com:5001/?ApiKey=WsJhIClUoGhV1ohCNFnAxk5tJT7hAd6X3qkIhbgBNOMMXIpgsgd1WUoFKahck8wW&SetPathFormat=CompressedJSON&Vehicle=Certh_Vehicle1");
+                        Log.d("HTTP Response 1", response1);
+
+                        if(response1.equals("Request accepted, but processing not complete."))
+                        {
+                            // Second HTTP request
+                            String response2 = makeHttpRequest("http://nextetruck.nng.com:5001/?ApiKey=WsJhIClUoGhV1ohCNFnAxk5tJT7hAd6X3qkIhbgBNOMMXIpgsgd1WUoFKahck8wW&TargetCoordinate=47.527923,19.034228&Vehicle=Certh_Vehicle1");
+                            Log.d("HTTP Response 2", response2);
+
+                            if(response2.equals("Request accepted, but processing not complete."))
+                            {
+                                // Third HTTP request
+                                //StringBuffer stringBuffer = new StringBuffer();
+                                //String response3 = makeHttpRequest("http://nextetruck.nng.com:5001/?ApiKey=WsJhIClUoGhV1ohCNFnAxk5tJT7hAd6X3qkIhbgBNOMMXIpgsgd1WUoFKahck8wW&SourceCoordinate=47.679449,19.654151:3.51&Vehicle=Certh_Vehicle1");
+                                //stringBuffer.append(makeHttpRequest("http://nextetruck.nng.com:5001/?ApiKey=WsJhIClUoGhV1ohCNFnAxk5tJT7hAd6X3qkIhbgBNOMMXIpgsgd1WUoFKahck8wW&SourceCoordinate=46.401017,20.307006:3.51&Vehicle=Certh_Vehicle1"));
+                                //Log.d("HTTP Response 3", response3);
+                                JSONObject jsonObject = new JSONObject(makeHttpRequest("http://nextetruck.nng.com:5001/?ApiKey=WsJhIClUoGhV1ohCNFnAxk5tJT7hAd6X3qkIhbgBNOMMXIpgsgd1WUoFKahck8wW&SourceCoordinate=46.401017,20.307006:3.51&Vehicle=Certh_Vehicle1"));
+                                //Log.d("HTTP Response 3", stringBuffer.toString());
+                                Log.d("HTTP Response 3", jsonObject.get("VehicleName").toString());
+                                Log.d("HTTP Response 3", jsonObject.get("RoadSegmentIds").toString());
+                                Log.d("HTTP Response 3", jsonObject.get("Length").toString());
+                                //Call Zsolt Class
+                            }
+                        }
+
+                        // Post results to the main thread if necessary
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                // Update UI with results here if needed
+                            }
+                        });
+                    } catch (Exception e) {
+                        Log.e("SynchronousHttpRequests", "Error during HTTP requests", e);
+                        e.printStackTrace();
+                    }
+                }
+            });
+        }
+
+        private String makeHttpRequest(String urlString) throws Exception {
+            URL url = new URL(urlString);
+            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+            try {
+                urlConnection.setRequestMethod("GET");
+                int responseCode = urlConnection.getResponseCode();
+
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    BufferedReader in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+                    String inputLine;
+                    StringBuilder response = new StringBuilder();
+
+                    while ((inputLine = in.readLine()) != null) {
+                        response.append(inputLine);
+                    }
+                    in.close();
+                    return response.toString();
+                } else {
+                    Log.w("SynchronousHttpRequests", "Non-OK response: " + responseCode + " for URL: " + urlString);
+                    if (responseCode == HttpURLConnection.HTTP_ACCEPTED) {
+                        // Handle 202 Accepted specifically if needed
+                        return "Request accepted, but processing not complete.";
+                    } else {
+                        throw new Exception("Failed to make request: " + responseCode);
+                    }
+                }
+            }
+            catch (Exception e) {
+                Log.e("SynchronousHttpRequests", "Error in makeHttpRequest: " + urlString, e);
+                throw e;
+            }
+            finally {
+                urlConnection.disconnect();
+            }
+        }
+    }
+
+    private void makeDimokasHttpRequest(String urlString, String nameString, String passwordString){
         try {
             // Create a URL object from the URL string
             URL url = new URL(urlString);
@@ -180,10 +275,10 @@ public class Page3MissionActivity extends AppCompatActivity {
                     String m_title = jsonObject.getString("m_title");
                     //String m_departure_address = jsonObject.getString("m_departure_address");
                     //String m_arrival_address = jsonObject.getString("m_arrival_address");
-                    String m_departure_lat = jsonObject.getString("m_departure_lat");
-                    String m_departure_long = jsonObject.getString("m_departure_long");
-                    String m_arrival_lat = jsonObject.getString("m_arrival_lat");
-                    String m_arrival_long = jsonObject.getString("m_arrival_long");
+                    //String m_departure_lat = jsonObject.getString("m_departure_lat");
+                    //String m_departure_long = jsonObject.getString("m_departure_long");
+                    //String m_arrival_lat = jsonObject.getString("m_arrival_lat");
+                    //String m_arrival_long = jsonObject.getString("m_arrival_long");
                     Log.i("PAVLOS MISSION", "String mission_id:"+mission_id);
                     data.add(mission_id + " " + m_title);
                 }
