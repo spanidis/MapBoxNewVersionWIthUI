@@ -1,7 +1,6 @@
 package el.ps.nextetrucknewtemplate;
 
 import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -11,6 +10,7 @@ import android.widget.Button;
 public class MainActivity extends AppCompatActivity {
 
     Button btnEnter;
+    Button btnPrivacyDisclaimer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,6 +22,15 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent i = new Intent(MainActivity.this, Page2LoginActivity.class);
+                startActivity(i);
+            }
+        });
+
+        btnPrivacyDisclaimer = findViewById(R.id.btnPrivacyDisclaimer);
+        btnPrivacyDisclaimer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(MainActivity.this, PrivacyDisclaimer.class);
                 startActivity(i);
             }
         });

@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">NextETruckApp</string>
+    <string name="txtEnter">Enter</string>
+    <string name="txtPrivacyDisclaimer">Privacy Disclaimer</string>NextETruck Logo
+    <string name="projectLogo">NextETruck Logo</string>
 </resources>
